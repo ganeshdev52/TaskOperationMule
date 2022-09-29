@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config2" doc:name="HTTP Listener config" doc:id="13c973d7-866b-4d2b-9b21-d2edf7f37c3b" basePath="/sql" >
+		<http:listener-connection host="0.0.0.0" port="8778" />
+	</http:listener-config>
+	<file:config name="CSVtoSQL" doc:name="File Config" doc:id="b4798fe3-4010-45c0-a1d2-197cd574a6b8" >
+		<file:connection workingDir="D:\Dest" />
+	</file:config>
+	<db:config name="Database_Config5" doc:name="Database Config" doc:id="bd044ec3-2147-4567-848f-dd0231d1e305" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Dextara@123" database="testDB" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config3" doc:name="HTTP Listener config" doc:id="5d7f1cb6-4780-474d-a852-07b579ac482c" basePath="/insert" >
+		<http:listener-connection host="0.0.0.0" port="8321" />
+	</http:listener-config>
+	<file:config name="File_Config3" doc:name="File Config" doc:id="7c331781-96b6-4d02-9757-0c2d24a794f4" >
+		<file:connection workingDir="D:\Dest" />
+	</file:config>
+	<db:config name="Database_Config3" doc:name="Database Config" doc:id="9cd48410-34e6-4782-b874-84d1b00c2310" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Dextara@123" database="testDB"/>
+	</db:config>
+	<flow name="SQLinsertCSVFlow" doc:id="6d82086c-9a3c-4786-9e84-266c8cc98316" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="2c75e985-28dd-4078-998e-5e9d6ea07137" config-ref="HTTP_Listener_config3" path="/sql"/>
+		<file:read doc:name="Read" doc:id="c946ee56-5249-4f66-8666-4f2b4c8bb142" config-ref="File_Config3" path="D:\Dest\CSVtoSQL.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="9a43cab3-fbae-47d8-89ed-747e3f9c89c1">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="42e30f6d-31fb-4e9c-85c5-e549e8ebcbfc" collection="#[payload]">
+			<db:insert doc:name="Insert" doc:id="ca5bace3-4608-466f-9d2f-8e034ebb5d19" config-ref="Database_Config3">
+			<db:sql><![CDATA[insert into Persons(PersonID,LastName,FirstName,Address,City) values(:PersonID,:LastName,:FirstName,:Address,:City)]]></db:sql>
+			<db:input-parameters><![CDATA[#[output application/json
+---
+{
+	PersonID: payload.PersonID,
+	Address: payload.LastName,
+	FirstName: payload.FirstName,
+	LastName: payload.Address,
+	City: payload.City
+}]]]></db:input-parameters>
+		</db:insert>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="79f1ce9a-0329-40b5-b68f-20efa531030a" message="Insert to MySQL is done"/>
+	</flow>
+</mule>

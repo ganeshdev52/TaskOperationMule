@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<file:config name="File_Config1" doc:name="File Config" doc:id="d295f3b8-884b-47d8-adb6-7bae665f43e5" >
+		<file:connection workingDir="D:\Dest" />
+	</file:config>
+	<db:config name="Database_Config2" doc:name="Database Config" doc:id="502e4824-d541-46e5-af1a-da84206f1ce5" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Dextara@123" database="testDB" />
+	</db:config>
+	<flow name="AsyncMuleFlow" doc:id="3aa7a571-c8f5-4a26-90ff-b97b21fe1893" >
+		<http:listener doc:name="Listener" doc:id="0c915622-30e7-43db-9be8-a3296098bb15" config-ref="HTTP_Listener_config" path="/async"/>
+		<async doc:name="Async" doc:id="f2625db1-cadc-4a6b-8ec9-557a30cee621" >
+			<file:write doc:name="Write" doc:id="3d653745-9310-43db-a38f-4ff3ace7f4fe" config-ref="File_Config1" path="D:\Dest\FileInsertSQL.json"/>
+		</async>
+		<ee:transform doc:name="Transform Message" doc:id="cbb43d12-8d09-4ebf-adfb-311c2041d80a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert" doc:id="d1eb785e-8cb1-4c71-9069-e509995be70d" config-ref="Database_Config2">
+			<db:sql ><![CDATA[INSERT INTO Persons(PersonID,LastName,FirstName,Address,City) VALUES(:PersonID,:LastName,:FirstName,:Address,:City)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	PersonID : payload.PersonID,
+	LastName : payload.LastName,
+	FirstName : payload.FirstName,
+	Address : payload.Address,
+	City : payload.City
+}]]]></db:input-parameters>
+		</db:insert>
+	</flow>
+</mule>

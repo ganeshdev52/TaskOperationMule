@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="12ba2c5e-a70a-49b7-bc6d-6da04fa33de7" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Dextara@123" database="testDB" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="94942ee9-520c-4b1d-b703-643a80be13cb" basePath="/base" >
+		<http:listener-connection host="0.0.0.0" port="8787" />
+	</http:listener-config>
+	<db:config name="Database_Config1" doc:name="Database Config" doc:id="8ebc1d60-3505-4862-bf51-ae655c7417d2" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Dextara@123" database="testDB" />
+	</db:config>
+	<flow name="taskoperationFlow" doc:id="f5f2c93f-6435-464f-aa83-6172f7e6954f" >
+		<http:listener doc:name="Listener" doc:id="7cc14485-217c-473b-8710-aafb028d3228" config-ref="HTTP_Listener_config" path="/path" allowedMethods="GET" />
+		<db:select doc:name="Select" doc:id="330dcf6f-78d9-4312-97f6-9e78745751d4" config-ref="Database_Config1">
+			<db:sql><![CDATA[Select * from Persons]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="10746d05-d002-4196-af0c-834dce65add0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="b69cebf1-d800-4802-8385-9ce579a403d6" collection="#[payload]">
+			<logger level="INFO" doc:name="Logger" doc:id="4db5f529-0d69-4e39-bd15-130656b27ef7" message="#[payload]" />
+		</foreach>
+	</flow>
+</mule>

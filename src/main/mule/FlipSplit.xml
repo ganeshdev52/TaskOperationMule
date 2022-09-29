@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config4" doc:name="HTTP Listener config" doc:id="09c48326-26da-4f56-8699-3709f4dcd374" basePath="/file" >
+		<http:listener-connection host="0.0.0.0" port="8063" />
+	</http:listener-config>
+	<file:config name="DestinationFolder" doc:name="File Config" doc:id="2c7f5c58-3db6-4b55-aac2-d0f3c9189ef3" >
+		<file:connection workingDir="D:\Destination" />
+	</file:config>
+	<http:listener-config name="HTTP_Listener_config6" doc:name="HTTP Listener config" doc:id="3f46ca63-b799-40b9-80dd-0baf491ecd44" basePath="/insert" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config2" doc:name="File Config" doc:id="84132a85-8852-4fd7-8fe7-e187a89edae6" >
+		<file:connection workingDir="D:\Destination" />
+	</file:config>
+	<file:config name="File_Config4" doc:name="File Config" doc:id="738248c4-c66c-43d0-a995-985f247de65d" >
+		<file:connection workingDir="D:\Output" />
+	</file:config>
+	<flow name="FlieSplitFlow" doc:id="206c6844-0edf-4b6d-bea8-208a81c0a583" >
+		<http:listener doc:name="SplitFlow" doc:id="782a4a03-090a-415c-8710-1d2ae324d4c2" config-ref="HTTP_Listener_config4" path="/insert"/>
+		<logger level="INFO" doc:name="Logger" doc:id="be918adc-7647-444a-9187-a7a072d46518" message="fetching files from the directory"/>
+		<file:list doc:name="List" doc:id="d609b2df-50cc-408d-a387-87dfd01561d1" config-ref="DestinationFolder" directoryPath="D:\Destination">
+			<file:matcher pathPattern="?*.{csv,json,txt}"/>
+		</file:list>
+		<ee:transform doc:name="Transform Message" doc:id="190eb2ab-ee69-41ba-b561-dc86cbf7e90c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.typedAttributes.fileName]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="2f09f259-6c68-467b-817c-5e3985237d5d" message="#[payload]"/>
+	</flow>
+	<flow name="FileListtoWrite" doc:id="f81d838e-c2c4-4e3f-8208-652f14defe65" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="e9a7464b-ea94-4bc3-b5b0-3f02b9f188e0" config-ref="HTTP_Listener_config6" path="/file"/>
+		<file:list doc:name="List" doc:id="26f07bb1-3974-4bd2-b0dc-9c2f4e3d754e" config-ref="File_Config2" directoryPath="D:\Destination"/>
+		<foreach doc:name="For Each" doc:id="01041bcf-5c52-490e-ba2e-049553dc8740" >
+			<logger level="INFO" doc:name="Logger" doc:id="f46b9dde-9975-46e7-a7b1-21bf5a24df91" message="File writing is started"/>
+			<file:write doc:name="Write" doc:id="a81871a8-5ae4-4cdf-8b2e-5b903df2f5af" config-ref="File_Config4" path="#[attributes.fileName]"/>
+		</foreach>
+	</flow>
+</mule>

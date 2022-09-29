@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="FlowReferenceFlow" doc:id="1b9cc9eb-b757-4b97-b210-969f6c3f8c21" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="60cf2620-8e17-49a3-a6b4-637d1d943396" config-ref="HTTP_Listener_config" path="/flow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7ab0ad20-287a-4bdf-88f8-70f4a231ff07" message="This is from Main Flow"/>
+		<set-payload value="This is Main Flow Payload" doc:name="Set Payload" doc:id="ed939dab-6ab3-487c-bf97-4d99e252dd5d" />
+		<flow-ref doc:name="Flow Reference" doc:id="98e2479f-7564-4e63-9b21-e1f6858c3ae6" name="SubFlow" targetValue="Hey Iam Flow reference "/>
+	</flow>
+	<sub-flow name="SubFlow" doc:id="6297a66a-d87e-49aa-b5d2-8e55bf8d8a95" >
+		<logger level="INFO" doc:name="Logger" doc:id="2816ef95-ff14-4ee6-9026-41e257f7417e" message="This is Sub Flow reference"/>
+		<set-payload doc:name="Set Payload" doc:id="7064cf92-bca2-427c-9468-b6cb47cc9b1f" value="This is from Sub Flow Reference"/>
+	</sub-flow>
+</mule>

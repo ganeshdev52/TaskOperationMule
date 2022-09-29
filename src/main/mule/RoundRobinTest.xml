@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="d4953a1e-a520-4db5-986d-3f259a280493" basePath="/base" >
+		<http:listener-connection host="0.0.0.0" port="8732" />
+	</http:listener-config>
+	<flow name="RoundRobinTestFlow" doc:id="246dffdd-051b-4939-a69c-847498bf314f" >
+		<http:listener doc:name="Listener" doc:id="0097b72f-90bb-4c95-932d-848ab1240a09" config-ref="HTTP_Listener_config1" path="/path"/>
+		<round-robin doc:name="Round Robin" doc:id="07eac5f3-cd35-4a26-bf9f-4e0e228fa93a" >
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="3fd6ce35-b9e5-4def-a59b-4b02f813e34c" message="Logger1 is activated"/>
+			</route>
+			<route >
+				<logger level="INFO" doc:name="Logger" doc:id="fdf049a7-ee4c-42f0-9b65-ae47bc3448ca" message="Logger2 is activated"/>
+			</route>
+		</round-robin>
+	</flow>
+</mule>
